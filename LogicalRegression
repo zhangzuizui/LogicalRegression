@@ -1,0 +1,83 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep  9 14:14:32 2016
+
+@author: 42135
+"""
+import math
+import numpy as np
+import LogicalRegression
+
+class LogicalRegression(object):
+    #类的初始化有4个参数：训练集X，Y，学习率a和迭代次数times
+    def __init__(self, X, Y, a, times):
+        self.a = a
+        trainX = np.array(X)
+        X0 = np.ones([len(X), 1])
+        self.trainX = np.hstack((X0, trainX))
+        self.trainY = np.array(Y)
+        
+        #随机地初始化theta
+        self.theta = np.random.rand(self.trainX.shape[1])
+        self.m = self.trainY.shape[0]
+        self.times = times
+    
+    def sigmoid(self, X):
+        thetaX = np.dot(X, self.theta)
+        hypothesisMatrix = np.zeros(thetaX.shape[0])
+        for i in range(thetaX.shape[0]):
+            hypothesisMatrix[i] = 1.0 / (1 + math.exp( - thetaX[i]))
+        return hypothesisMatrix
+
+    def costfunction(self, h, y):
+        return -y * math.log(h) - (1 - y) * math.log(1 - h)
+
+    
+    def Jtheta(self):
+        totle = 0.0
+        h = self.sigmoid(self.trainX)
+        for i in range(self.m):
+            totle += self.costfunction(h[i], self.trainY[i])
+        return totle / self.m
+    
+    def gradientDescent(self):
+        theta_temp = np.zeros(self.theta.shape)
+        for i in range(self.theta.shape[0]):
+            theta_temp[i] = self.theta[i] - self.a * np.dot((self.sigmoid(self.trainX) - self.trainY), self.trainX[:, i])
+        self.theta = theta_temp
+        return self.theta
+    
+    def train(self):
+        
+        for i in range(self.times):
+            self.gradientDescent()
+            if i==0:
+                lastResult = self.Jtheta()
+            else:
+                if self.Jtheta() > lastResult:
+                    time = i
+                    print('time=%s' % time) #cost函数迭代到最小时终止迭代并输出迭代次数
+                    break
+                lastResult = self.Jtheta()
+                
+        print('cost=%s' % (self.Jtheta()))
+        return self.theta #返回值为theta
+    
+    #预测需要输入参数测试集testX
+    def prediction(self, testX):
+        return self.sigmoid(testX)
+        
+    
+if __name__ == '__main__':
+        X = np.random.rand(50, 6)
+        Y1 = np.zeros(25,)
+        Y2 = np.ones(25,)
+        Y = np.hstack((Y1, Y2))
+        test = LogicalRegression(X, Y,0.01, 5000)
+        test.train()
+        
+    
+    
+        
+        
+    
